@@ -14,10 +14,10 @@ global lib_topic
 broker_ip = 'localhost'
 port = 1883
 
-
 global lib_mqtt_client
-lib={}
+lib = {}
 sleep_sec = 1
+
 
 def missionPortOpen(missionPortNum, missionBaudrate):
     # Connect serial
@@ -48,7 +48,7 @@ def missionPortError(err):
     print('[missionPort error]: ', err)
 
 
-def send_data_to_msw (data_topic, obj_data):
+def send_data_to_msw(data_topic, obj_data):
     lib_mqtt_client.publish(data_topic, obj_data)
 
 
@@ -69,7 +69,7 @@ def msw_mqtt_connect(broker_ip, port):
     container_name = lib["control"][0]
     control_topic = '/MUV/control/' + lib["name"] + '/' + container_name
     lib_mqtt_client.subscribe(control_topic, 0)
-    print(control_topic)
+    #     print(control_topic)
     lib_mqtt_client.loop_start()
     return lib_mqtt_client
 
@@ -93,34 +93,38 @@ def on_message(client, userdata, msg):
 
 def on_receive_from_msw(topic, str_message):
     print('[' + topic + '] ' + str_message)
-    cinObj = json.loads(str_message)
-    request_to_mission(cinObj)
+    request_to_mission(str_message)
 
 
-def request_to_mission(cinObj):
-    if missionPort != None:
-        if missionPort.isOpen():
-            con = cinObj['con']
-            con_arr = con.split(',')
-            if (int(con_arr[0]) < 8) and (int(con_arr[1]) < 8):
-                stx = 'A2'
-                command = '030' + con_arr[0] + '0' + con_arr[1] + '000000000000'
-                crc = 0
-                print(command)
-                for i in range(0,len(command),2):
-                    crc ^= int(command[i+1],16)
-                if crc < 16:
-                    command += ('0' + str(crc))
-                else :
-                    command += str(crc)
+def request_to_mission(con):
+    try:
+        if missionPort != None:
+            if missionPort.isOpen():
+                con_arr = con.split(',')
+                if (int(con_arr[0]) < 8) and (int(con_arr[1]) < 8):
+                    stx = 'A2'
+                    command = '030' + con_arr[0] + '0' + con_arr[1] + '000000000000'
+                    crc = 0
+                    print(command)
+                    for i in range(0, len(command), 2):
+                        print('crc: ', crc)
+                        crc ^= int(command[i + 1], 16)
+                    if crc < 16:
+                        command += ('0' + str(crc))
+                    else:
+                        command += str(crc)
 
-                etx = 'A3'
-                command = stx + command + etx
-                print('command: ', command)
-                
-                msdata = bytes.fromhex(command)
-                print('msdata: ', msdata)
-                missionPort.write(msdata)
+                    etx = 'A3'
+                    command = stx + command + etx
+                    print('command: ', command)
+
+                    msdata = bytes.fromhex(command)
+                    print('msdata: ', msdata)
+                    missionPort.write(msdata)
+
+    except (ValueError, IndexError, TypeError):
+        pass
+
 
 def main():
     global lib
@@ -147,13 +151,12 @@ def main():
         with open('./' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
 
-
     lib['serialPortNum'] = argv[1]
     lib['serialBaudrate'] = argv[2]
-    
-    
+
     lib_mqtt_client = msw_mqtt_connect(broker_ip, port)
     missionPort = missionPortOpen(lib['serialPortNum'], lib['serialBaudrate'])
- 
+
+
 if __name__ == "__main__":
     main()
