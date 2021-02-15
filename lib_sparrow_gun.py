@@ -182,12 +182,9 @@ def main():
         os.kill(pid_arr[0], signal.SIGKILL)
         os.kill(pid_arr[0]+1, signal.SIGKILL)
 
-    msw_dir_name = 'msw_' + my_lib_name[4:]
-    msw_dir_name = msw_dir_name + '_' + msw_dir_name
-
     try:
         lib = dict()
-        with open('./' + my_msw_name + '/' + my_lib_name + '.json', 'r') as f:
+        with open('./' + my_lib_name + '/' + my_lib_name + '.json', 'r') as f:
             lib = json.load(f)
             lib = json.loads(lib)
 
@@ -202,9 +199,8 @@ def main():
         lib = json.dumps(lib, indent=4)
         lib = json.loads(lib)
 
-        with open('./' + my_msw_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
+        with open('./' + my_lib_name + '/' + my_lib_name + '.json', 'w', encoding='utf-8') as json_file:
             json.dump(lib, json_file, indent=4)
-
 
     lib['serialPortNum'] = argv[1]
     lib['serialBaudrate'] = argv[2]
