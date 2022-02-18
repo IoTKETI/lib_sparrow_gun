@@ -5,7 +5,6 @@ from time import sleep
 import threading
 
 ################################
-argv = sys.argv
 
 broker_ip = 'localhost'
 port = 1883
@@ -163,15 +162,18 @@ def main():
     global control_topic
     global data_topic
     global req_topic
-
+    global argv
     global gun_event
     global con
     global req
 
     my_lib_name = 'lib_sparrow_gun'
-    my_msw_name = 'msw'+ my_lib_name[3:] + '_' + 'msw'+ my_lib_name[3:]
-
-    cmd = ['./' + my_msw_name + '/' + my_lib_name, argv[1], argv[2]]
+    
+    argv = sys.argv
+    print('===================================================')
+    print(argv)
+    print('===================================================')
+    cmd = ['./' + my_lib_name, argv[1], argv[2]]
     pid_arr = []
     processWatch = [p.cmdline() for p in psutil.process_iter()].count(cmd)
     if processWatch > 2:
