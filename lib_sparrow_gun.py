@@ -237,4 +237,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python3 -m PyInstaller lib_sparrow_gun.py
+# python3 -m PyInstaller -F lib_sparrow_gun.py
