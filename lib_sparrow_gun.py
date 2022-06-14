@@ -95,12 +95,15 @@ def missionPortData():
         msdata = bytes.fromhex(command)
         missionPort.write(msdata)
 
-        if status == "open":
-            status = 'opened'
-        elif status == 'opened':
-            msg = 'alive'
-            send_data_to_msw(msg)
-        elif status == 'error':
+        aliveMsg = missionPort.readline()
+        alivemessage = aliveMsg.decode("utf-8").split('A3')
+
+        if alivemessage[0][0:2] == 'A2':
+                if alivemessage[0][2:4] == '02':
+                    status = 'alive'
+                    send_data_to_msw(status)
+
+        if status == 'error':
             send_data_to_msw(status)
             missionPortOpening(lib['serialPortNum'], lib['serialBaudrate'])
 
