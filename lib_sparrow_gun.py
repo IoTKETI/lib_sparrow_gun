@@ -80,6 +80,21 @@ def missionPortData():
     global status
 
     while True:
+        stx = 'A2'
+        command = '010000000000000000'
+        crc = 0
+        for i in range(0, len(command), 2):
+            crc ^= int(command[i + 1], 16)
+        if crc < 16:
+            command += ('0' + str(crc))
+        else:
+            command += str(crc)
+        etx = 'A3'
+        command = stx + command + etx
+
+        msdata = bytes.fromhex(command)
+        missionPort.write(msdata)
+
         if status == "open":
             status = 'opened'
         elif status == 'opened':
@@ -142,14 +157,12 @@ def request_to_mission():
         if missionPort is not None:
             if missionPort.isOpen():
                 con_arr = con.split(',')
-                #                 print(con_arr)
                 if (int(con_arr[0]) < 8) and (int(con_arr[1]) < 8):
                     stx = 'A2'
                     command = '030' + con_arr[0] + '0' + con_arr[1] + '000000000000'
                     crc = 0
                     #                     print(command)
                     for i in range(0, len(command), 2):
-                        print('crc: ', crc)
                         crc ^= int(command[i + 1], 16)
                     if crc < 16:
                         command += ('0' + str(crc))
@@ -158,10 +171,8 @@ def request_to_mission():
 
                     etx = 'A3'
                     command = stx + command + etx
-                    #                     print('command: ', command)
 
                     msdata = bytes.fromhex(command)
-                    #                     print('msdata: ', msdata)
                     missionPort.write(msdata)
 
     except (ValueError, IndexError, TypeError):
